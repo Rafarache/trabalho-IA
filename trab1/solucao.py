@@ -116,7 +116,7 @@ def pegarcaminhoaraiz(nodo):
     nodoaux = nodo
     pai = nodoaux.pai
     while pai != None:
-        arraydirecao.append(nodo.acao)
+        arraydirecao.append(nodoaux.acao)
         nodoaux = nodoaux.pai
         pai = nodoaux.pai
         
@@ -156,6 +156,20 @@ def dfs(estado):
     :return:
     """
     # substituir a linha abaixo pelo seu codigo
+    inicial = Nodo(estado, None, None, 1)
+    exploradas = []
+    fronteiras = [inicial]
+    atual = None
+    while True:
+        #print(exploradas, fronteiras, atual)
+        if(len(fronteiras) == 0):
+            return None
+        atual = fronteiras.pop()
+        if(atual.estado == OBJECTIVE):
+            return pegarcaminhoaraiz(atual)
+        if not any(atual.estado in explorada.estado for explorada in exploradas):
+            exploradas.append(atual)
+            fronteiras += expande(atual)
 
 
 def astar_hamming(estado):
@@ -185,4 +199,4 @@ def astar_manhattan(estado):
 # print(arrayparaestado(estadoparaarray(OBJECTIVE)))
 # print(sucessor(OBJECTIVE))
 # print(expande(Nodo(OBJECTIVE, None, None, 1)))
-print(bfs("123_56478"))
+print(bfs("12356_478"))
