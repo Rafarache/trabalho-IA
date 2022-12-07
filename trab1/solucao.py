@@ -47,9 +47,9 @@ class Nodo:
                 
     def mostrar(self):
         if(self.pai != None):
-            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado + str(self.custo)
+            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado +  " " +  str(self.custo)
         else:
-            return self.estado
+            return self.estado + " sem pai e mae"
         
     def __str__(self):
         return self.mostrar()
@@ -107,7 +107,7 @@ def expande(nodo):
     sucessores = sucessor(nodo.estado)
     lista = []
     for acao, estado in sucessores:
-        lista.append(Nodo(estado, nodo, acao, 1))
+        lista.append(Nodo(estado, nodo, acao, nodo.custo + 1))
     
     return lista
 	
@@ -171,6 +171,25 @@ def dfs(estado):
             exploradas.append(atual)
             fronteiras += expande(atual)
 
+def numerodepecasforadelugar(estado):
+    soma = 0
+    for x in range(9):
+        if(estado[x] == OBJECTIVE[x]):
+            soma += 1
+
+    return soma
+
+  
+def pegarnododemenorcusto(array):
+    menor = array[0]
+    #print(array)
+    for nodo in array:
+        custonodo = nodo.custo + numerodepecasforadelugar(nodo.estado)
+        customenor = menor.custo + numerodepecasforadelugar(nodo.estado)
+        #print(custonodo, customenor)
+        if (custonodo < customenor):
+            menor = nodo
+    return menor
 
 def astar_hamming(estado):
     """
@@ -182,6 +201,23 @@ def astar_hamming(estado):
     :return:
     """
     # substituir a linha abaixo pelo seu codigo
+    inicial = Nodo(estado, None, None, 1)
+    exploradas = []
+    fronteiras = [inicial]
+    atual = None
+    while True:
+        #print(exploradas, fronteiras, atual)
+        if(len(fronteiras) == 0):
+            return None
+        atual = pegarnododemenorcusto(fronteiras)
+        if(atual.estado == OBJECTIVE):
+            return pegarcaminhoaraiz(atual)
+        #print(atual,exploradas)
+        if not any(atual.estado in explorada.estado for explorada in exploradas):
+            exploradas.append(atual)
+            fronteiras += expande(atual)
+            fronteiras.remove(atual)
+            
 
 
 def astar_manhattan(estado):
@@ -199,4 +235,4 @@ def astar_manhattan(estado):
 # print(arrayparaestado(estadoparaarray(OBJECTIVE)))
 # print(sucessor(OBJECTIVE))
 # print(expande(Nodo(OBJECTIVE, None, None, 1)))
-print(bfs("12356_478"))
+print(astar_hamming("1234_5678"))
