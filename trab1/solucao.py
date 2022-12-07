@@ -96,8 +96,6 @@ def sucessor(estado):
         
     return listadeestadospossiveis
 
-    
-
 def expande(nodo):
     """
     Recebe um nodo (objeto da classe Nodo) e retorna um iterable de nodos.
@@ -112,6 +110,17 @@ def expande(nodo):
         lista.append(Nodo(estado, nodo, acao, 1))
     
     return lista
+	
+def pegarcaminhoaraiz(nodo):
+    arraydirecao = []
+    nodoaux = nodo
+    pai = nodoaux.pai
+    while pai != None:
+        arraydirecao.append(nodo.acao)
+        nodoaux = nodoaux.pai
+        pai = nodoaux.pai
+        
+    return list(reversed(arraydirecao))
 
 def bfs(estado):
     """
@@ -127,16 +136,15 @@ def bfs(estado):
     fronteiras = [inicial]
     atual = None
     while True:
-        print(exploradas, fronteiras, atual)
+        #print(exploradas, fronteiras, atual)
         if(len(fronteiras) == 0):
             return None
         atual = fronteiras.pop(0)
         if(atual.estado == OBJECTIVE):
-            return atual.estado
+            return pegarcaminhoaraiz(atual)
         if not any(atual.estado in explorada.estado for explorada in exploradas):
             exploradas.append(atual)
             fronteiras += expande(atual)
-        
 
 def dfs(estado):
     """
@@ -177,4 +185,4 @@ def astar_manhattan(estado):
 # print(arrayparaestado(estadoparaarray(OBJECTIVE)))
 # print(sucessor(OBJECTIVE))
 # print(expande(Nodo(OBJECTIVE, None, None, 1)))
-print(bfs("123456_78"))
+print(bfs("123_56478"))
