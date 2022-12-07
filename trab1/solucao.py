@@ -7,7 +7,7 @@ DIREITA = "direita"
 CIMA = "cima"
 BAIXO = "baixo"
 
-OBJECTIVE = "2_3541687"
+OBJECTIVE = "12345678_"
 
 
 def estadoparaarray(estado):
@@ -40,14 +40,17 @@ def posicaoespaco(array):
 
 class Nodo:
     def __init__(self, estado, pai, acao, custo):
-        self.estado = estado
-        self.pai = pai
-        self.acao = acao
-        self.custo = custo
-				
+        self.estado = estado #string
+        self.pai = pai #Nodo
+        self.acao = acao #string
+        self.custo = custo #int
+                
     def mostrar(self):
-        return self.estado + " " + self.acao + " Pai -> " + self.pai.estado + str(self.custo)
-		
+        if(self.pai != None):
+            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado + str(self.custo)
+        else:
+            return self.estado
+        
     def __str__(self):
         return self.mostrar()
 
@@ -67,13 +70,13 @@ def sucessor(estado):
     arrayestado = estadoparaarray(estado)
     listadeestadospossiveis = []
     x,y = posicaoespaco(arrayestado)
-    if (x<2):
+    if (y<2):
         newestado = estadoparaarray(estado)
         newestado[x][y] = newestado[x][y+1]
         newestado[x][y+1] = "_"
         listadeestadospossiveis.append((DIREITA, arrayparaestado(newestado)))
     
-    if (y<2):
+    if (x<2):
         newestado = estadoparaarray(estado)
         newestado[x][y] = newestado[x+1][y]
         newestado[x+1][y] = "_"
@@ -119,8 +122,21 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-
+    inicial = Nodo(estado, None, None, 1)
+    exploradas = []
+    fronteiras = [inicial]
+    atual = None
+    while True:
+        print(exploradas, fronteiras, atual)
+        if(len(fronteiras) == 0):
+            return None
+        atual = fronteiras.pop(0)
+        if(atual.estado == OBJECTIVE):
+            return atual.estado
+        if not any(atual.estado in explorada.estado for explorada in exploradas):
+            exploradas.append(atual)
+            fronteiras += expande(atual)
+        
 
 def dfs(estado):
     """
@@ -160,4 +176,5 @@ def astar_manhattan(estado):
     
 # print(arrayparaestado(estadoparaarray(OBJECTIVE)))
 # print(sucessor(OBJECTIVE))
-print(expande(Nodo(OBJECTIVE, None, None, 1)))
+# print(expande(Nodo(OBJECTIVE, None, None, 1)))
+print(bfs("123456_78"))
