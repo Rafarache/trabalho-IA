@@ -47,7 +47,7 @@ class Nodo:
                 
     def mostrar(self):
         if(self.pai != None):
-            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado +  " " +  str(self.custo)
+            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado +  " " +  str(self.custo + numerodepecasforadelugar(self.estado))
         else:
             return self.estado + " sem pai e mae"
         
@@ -177,7 +177,7 @@ def numerodepecasforadelugar(estado):
         if(estado[x] == OBJECTIVE[x]):
             soma += 1
 
-    return soma
+    return 9 - soma
 
   
 def pegarnododemenorcusto(array):
@@ -185,8 +185,29 @@ def pegarnododemenorcusto(array):
     #print(array)
     for nodo in array:
         custonodo = nodo.custo + numerodepecasforadelugar(nodo.estado)
-        customenor = menor.custo + numerodepecasforadelugar(nodo.estado)
-        #print(custonodo, customenor)
+        customenor = menor.custo + numerodepecasforadelugar(menor.estado)
+        #print(custonodo, customenor, nodo, menor)
+        if (custonodo < customenor):
+            menor = nodo
+    return menor
+
+def valormanhattan(estado):
+    soma = 0
+    for x, linha in enumerate(estadoparaarray(estado)):
+        for y, valor in enumerate(linha):
+            if(valor != "_"):
+                #print(x,y, valor, estado)
+                soma += abs((int(valor)-1)%3 - x%3)
+                soma += abs((int(valor)-1)%3 - y%3)
+    return soma
+    
+def pegarnododemenorcustomanhattan(array):
+    menor = array[0]
+    #print(array)
+    for nodo in array:
+        custonodo = nodo.custo + valormanhattan(nodo.estado)
+        customenor = menor.custo + valormanhattan(menor.estado)
+        #print(custonodo, customenor, nodo, menor)
         if (custonodo < customenor):
             menor = nodo
     return menor
@@ -210,14 +231,16 @@ def astar_hamming(estado):
         if(len(fronteiras) == 0):
             return None
         atual = pegarnododemenorcusto(fronteiras)
+        fronteiras.remove(atual)
         if(atual.estado == OBJECTIVE):
             return pegarcaminhoaraiz(atual)
-        #print(atual,exploradas)
+        #print(atual)
         if not any(atual.estado in explorada.estado for explorada in exploradas):
             exploradas.append(atual)
-            fronteiras += expande(atual)
-            fronteiras.remove(atual)
-            
+            fronteiras += list(expande(atual))
+        
+        #print("***", exploradas)
+        #print("-->", atual)           
 
 
 def astar_manhattan(estado):
@@ -229,10 +252,31 @@ def astar_manhattan(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
+        # substituir a linha abaixo pelo seu codigo
+    inicial = Nodo(estado, None, None, 1)
+    exploradas = []
+    fronteiras = [inicial]
+    atual = None
+
+    while True:
+        #print(exploradas, fronteiras, atual)
+        if(len(fronteiras) == 0):
+            return None
+        atual = pegarnododemenorcustomanhattan(fronteiras)
+        fronteiras.remove(atual)
+        if(atual.estado == OBJECTIVE):
+            return pegarcaminhoaraiz(atual)
+        #print(atual)
+        if not any(atual.estado in explorada.estado for explorada in exploradas):
+            exploradas.append(atual)
+            fronteiras += list(expande(atual))
+        
+        #print("***", exploradas)
+        #print("-->", atual)   
     
-    
-# print(arrayparaestado(estadoparaarray(OBJECTIVE)))
-# print(sucessor(OBJECTIVE))
-# print(expande(Nodo(OBJECTIVE, None, None, 1)))
-print(astar_hamming("1234_5678"))
+
+START = "12_356478"
+#print(dfs(START))
+print(bfs(START))
+print(astar_hamming(START))
+print(astar_manhattan(START))
