@@ -1,11 +1,13 @@
+from queue import Queue,LifoQueue
+
 """
 CONSTANTES
 """
 
 ESQUERDA = "esquerda"
 DIREITA = "direita"
-CIMA = "cima"
-BAIXO = "baixo"
+CIMA = "acima"
+BAIXO = "abaixo"
 
 OBJECTIVE = "12345678_"
 
@@ -44,10 +46,11 @@ class Nodo:
         self.pai = pai #Nodo
         self.acao = acao #string
         self.custo = custo #int
+        self.custoAgregado  = None # int
                 
     def mostrar(self):
         if(self.pai != None):
-            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado +  " " +  str(self.custo + numerodepecasforadelugar(self.estado))
+            return self.estado + " " + self.acao + " Pai -> " + self.pai.estado +  " " +  str(self.custoAgregado)
         else:
             return self.estado + " sem pai e mae"
         
@@ -132,19 +135,22 @@ def bfs(estado):
     :return:
     """
     inicial = Nodo(estado, None, None, 1)
-    exploradas = []
-    fronteiras = [inicial]
+    exploradas = {}
+    fronteiras = Queue(0)
+    fronteiras.put(inicial)
     atual = None
     while True:
         #print(exploradas, fronteiras, atual)
-        if(len(fronteiras) == 0):
+        if(fronteiras.qsize() == 0):
             return None
-        atual = fronteiras.pop(0)
+        atual = fronteiras.get()
         if(atual.estado == OBJECTIVE):
             return pegarcaminhoaraiz(atual)
-        if not any(atual.estado in explorada.estado for explorada in exploradas):
-            exploradas.append(atual)
-            fronteiras += expande(atual)
+        if not atual.estado in exploradas:
+            exploradas[atual.estado] = atual
+	    #fronteiras += expande(atual)
+            for node in expande(atual):
+                fronteiras.put(node)
 
 def dfs(estado):
     """
@@ -157,19 +163,22 @@ def dfs(estado):
     """
     # substituir a linha abaixo pelo seu codigo
     inicial = Nodo(estado, None, None, 1)
-    exploradas = []
-    fronteiras = [inicial]
+    exploradas = {}
+    fronteiras = LifoQueue(0)
+    fronteiras.put(inicial)
     atual = None
     while True:
         #print(exploradas, fronteiras, atual)
-        if(len(fronteiras) == 0):
+        if(fronteiras.qsize() == 0):
             return None
-        atual = fronteiras.pop()
+        atual = fronteiras.get()
         if(atual.estado == OBJECTIVE):
             return pegarcaminhoaraiz(atual)
-        if not any(atual.estado in explorada.estado for explorada in exploradas):
-            exploradas.append(atual)
-            fronteiras += expande(atual)
+        if not atual.estado in exploradas:
+            exploradas[atual.estado] = atual
+	    #fronteiras += expande(atual)
+            for node in expande(atual):
+                fronteiras.put(node)
 
 def numerodepecasforadelugar(estado):
     soma = 0
@@ -180,16 +189,14 @@ def numerodepecasforadelugar(estado):
     return 9 - soma
 
   
-def pegarnododemenorcusto(array):
-    menor = array[0]
-    #print(array)
-    for nodo in array:
-        custonodo = nodo.custo + numerodepecasforadelugar(nodo.estado)
-        customenor = menor.custo + numerodepecasforadelugar(menor.estado)
-        #print(custonodo, customenor, nodo, menor)
-        if (custonodo < customenor):
+def pegarnododemenorcusto(dic):
+    menor = 1000000
+    for nodo in dic:
+        if nodo < menor and len(dic[nodo]) != 0:
             menor = nodo
-    return menor
+
+    ret = dic[menor].pop(0)
+    return ret
 
 def valormanhattan(estado):
     soma = 0
@@ -223,24 +230,32 @@ def astar_hamming(estado):
     """
     # substituir a linha abaixo pelo seu codigo
     inicial = Nodo(estado, None, None, 1)
-    exploradas = []
-    fronteiras = [inicial]
+    exploradas = {}
+    inicial.custoAgregado = numerodepecasforadelugar(inicial.estado) + inicial.custo
+    fronteiras = {inicial.custoAgregado: [inicial]}
     atual = None
     while True:
-        #print(exploradas, fronteiras, atual)
+
+        #print(len(exploradas))
         if(len(fronteiras) == 0):
             return None
         atual = pegarnododemenorcusto(fronteiras)
-        fronteiras.remove(atual)
         if(atual.estado == OBJECTIVE):
             return pegarcaminhoaraiz(atual)
         #print(atual)
-        if not any(atual.estado in explorada.estado for explorada in exploradas):
-            exploradas.append(atual)
-            fronteiras += list(expande(atual))
+        if not atual.estado in exploradas:
+            exploradas[atual.estado] = atual
+            for node in expande(atual):
+                node.custoAgregado = numerodepecasforadelugar(node.estado) + node.custo
+                if not node.custoAgregado in fronteiras:
+                    fronteiras[node.custoAgregado] = [node]
+                else:
+                    fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
         
         #print("***", exploradas)
-        #print("-->", atual)           
+        #print("-->", atual) 
+
+	
 
 
 def astar_manhattan(estado):
@@ -252,31 +267,32 @@ def astar_manhattan(estado):
     :param estado: str
     :return:
     """
-        # substituir a linha abaixo pelo seu codigo
     inicial = Nodo(estado, None, None, 1)
-    exploradas = []
-    fronteiras = [inicial]
+    exploradas = {}
+    inicial.custoAgregado = valormanhattan(inicial.estado) + inicial.custo
+    fronteiras = {inicial.custoAgregado: [inicial]}
     atual = None
-
     while True:
-        #print(exploradas, fronteiras, atual)
+
+        #print(len(fronteiras))
         if(len(fronteiras) == 0):
             return None
-        atual = pegarnododemenorcustomanhattan(fronteiras)
-        fronteiras.remove(atual)
+        atual = pegarnododemenorcusto(fronteiras)
         if(atual.estado == OBJECTIVE):
             return pegarcaminhoaraiz(atual)
         #print(atual)
-        if not any(atual.estado in explorada.estado for explorada in exploradas):
-            exploradas.append(atual)
-            fronteiras += list(expande(atual))
+        if not atual.estado in exploradas:
+            exploradas[atual.estado] = atual
+            for node in expande(atual):
+                node.custoAgregado = valormanhattan(node.estado) + node.custo
+                if not node.custoAgregado in fronteiras:
+                    fronteiras[node.custoAgregado] = [node]
+                else:
+                    fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
         
-        #print("***", exploradas)
-        #print("-->", atual)   
-    
 
-START = "12_356478"
+START = "185423_67"
 #print(dfs(START))
-print(bfs(START))
-print(astar_hamming(START))
-print(astar_manhattan(START))
+#print(dfs(START))
+#print(astar_hamming(START))
+#print(astar_manhattan(START))
