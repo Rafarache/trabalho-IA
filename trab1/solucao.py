@@ -70,34 +70,38 @@ def sucessor(estado):
     :return:
     """
     # substituir a linha abaixo pelo seu codigo
-    arrayestado = estadoparaarray(estado)
-    listadeestadospossiveis = []
-    x,y = posicaoespaco(arrayestado)
-    if (y<2):
-        newestado = estadoparaarray(estado)
-        newestado[x][y] = newestado[x][y+1]
-        newestado[x][y+1] = "_"
-        listadeestadospossiveis.append((DIREITA, arrayparaestado(newestado)))
-    
-    if (x<2):
-        newestado = estadoparaarray(estado)
-        newestado[x][y] = newestado[x+1][y]
-        newestado[x+1][y] = "_"
-        listadeestadospossiveis.append((BAIXO, arrayparaestado(newestado)))
+def sucessor(estado):
+    retorno = []
+    pos = estado.find("_")
 
-    if (y>0):
-        newestado = estadoparaarray(estado)
-        newestado[x][y] = newestado[x][y-1]
-        newestado[x][y-1] = "_"
-        listadeestadospossiveis.append((ESQUERDA, arrayparaestado(newestado)))
-
-    if (x>0):
-        newestado = estadoparaarray(estado)
-        newestado[x][y] = newestado[x-1][y]
-        newestado[x-1][y] = "_"
-        listadeestadospossiveis.append((CIMA, arrayparaestado(newestado)))
+    if(pos !=6 and pos!=7 and pos!=8):
+        lista = list(estado)
+        temp = lista[pos]
+        lista[pos]=lista[pos+3]
+        lista[pos+3]=temp
+        retorno.append((BAIXO,"".join(lista)))
         
-    return listadeestadospossiveis
+    if(pos !=0 and pos!=1 and pos!=2):
+        lista = list(estado)
+        temp = lista[pos]
+        lista[pos]=lista[pos-3]
+        lista[pos-3]=temp
+        retorno.append((CIMA,"".join(lista)))
+        
+    if(pos !=2 and pos!=5 and pos!=8):
+        lista = list(estado)
+        temp = lista[pos]
+        lista[pos]=lista[pos+1]
+        lista[pos+1]=temp
+        retorno.append((DIREITA,"".join(lista)))
+        
+    if(pos != 0 and pos!= 3 and pos!=6):
+        lista = list(estado)
+        temp = lista[pos]
+        lista[pos]=lista[pos-1]
+        lista[pos-1]=temp
+        retorno.append((ESQUERDA,"".join(lista)))
+    return retorno       
 
 def expande(nodo):
     """
@@ -192,10 +196,13 @@ def numerodepecasforadelugar(estado):
 def pegarnododemenorcusto(dic):
     menor = 1000000
     for nodo in dic:
-        if nodo < menor and len(dic[nodo]) != 0:
+        if nodo < menor:
             menor = nodo
 
-    ret = dic[menor].pop(0)
+    ret = dic[menor].pop()
+    #print(len(dic[menor]))
+    if (len(dic[menor]) is 0):
+        del dic[menor]
     return ret
 
 def valormanhattan(estado):
@@ -246,11 +253,12 @@ def astar_hamming(estado):
         if not atual.estado in exploradas:
             exploradas[atual.estado] = atual
             for node in expande(atual):
-                node.custoAgregado = numerodepecasforadelugar(node.estado) + node.custo
-                if not node.custoAgregado in fronteiras:
-                    fronteiras[node.custoAgregado] = [node]
-                else:
-                    fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
+                if not node.estado in exploradas:
+                    node.custoAgregado = numerodepecasforadelugar(node.estado) + node.custo
+                    if not node.custoAgregado in fronteiras:
+                        fronteiras[node.custoAgregado] = [node]
+                    else:
+                        fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
         
         #print("***", exploradas)
         #print("-->", atual) 
@@ -274,7 +282,7 @@ def astar_manhattan(estado):
     atual = None
     while True:
 
-        #print(len(fronteiras))
+        #print(fronteiras.keys(), len(fronteiras.values()))
         if(len(fronteiras) == 0):
             return None
         atual = pegarnododemenorcusto(fronteiras)
@@ -284,12 +292,13 @@ def astar_manhattan(estado):
         if not atual.estado in exploradas:
             exploradas[atual.estado] = atual
             for node in expande(atual):
-                node.custoAgregado = valormanhattan(node.estado) + node.custo
-                if not node.custoAgregado in fronteiras:
-                    fronteiras[node.custoAgregado] = [node]
-                else:
-                    fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
-        
+                if not node.estado in exploradas:
+                    node.custoAgregado = valormanhattan(node.estado) + node.custo
+                    if not node.custoAgregado in fronteiras:
+                        fronteiras[node.custoAgregado] = [node]
+                    else:
+                        fronteiras[node.custoAgregado] = fronteiras[node.custoAgregado] + [node]
+    
 
 START = "185423_67"
 #print(dfs(START))
